@@ -1,0 +1,22 @@
+<p>Level {{ levelNumber }}</p>
+<p>Get to 10 completed tasks and you win! Fail 10 and you lose.</p>
+
+<p>Progress: {{ progress }}</p>
+<p>Completed: {{ level.tasks.completed || 0 }}</p>
+<p>Failed: {{ level.tasks.failed || 0 }}</p>
+
+<button ng-if="readyToStart" ng-click="generateInstruction()">Start generating instructions</button>
+<p ng-if="instruction != null">Set {{ instruction.name }} to {{ instruction.state }}</p>
+
+<ul>
+<li ng-repeat="(gadgetKey, gadget) in gadgets">
+  {{gadget.name}} {{gadget.state}}<br /> 
+  <button ng-repeat="state in gadget.possible" ng-click="setGadgetState(gadgetKey, state)">{{state}}
+  </button>
+</li>
+</ul>
+
+<ul>
+<li ng-repeat="instr in pastInstructions | reverse" ng-class="{completed: instr.completed, failed: !instr.completed}">Set {{ instr.name }} to {{ instr.state }}</li>
+</ul>
+<!--pre>Level: {{ level | json }}</pre-->

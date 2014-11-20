@@ -1,0 +1,7 @@
+<p>Enter your name: <input ng-model="username"></p>
+<p>Enter room name: <input ng-model="room.name"></p>
+
+<p ng-switch="roomSet">
+  <button ng-switch-when="true" ng-click="startRoom()">Start the {{ room.name }} game</button>
+  <button ng-switch-default ng-click="joinRoom()">Join {{ room.name }} room</button>
+</p>

@@ -1,0 +1,9 @@
+{
+  "firebase": "google-spaceteam",
+  "public": ".",
+  "ignore": [
+    "firebase.json",
+    "**/.*",
+    "**/node_modules/**"
+  ]
+}
