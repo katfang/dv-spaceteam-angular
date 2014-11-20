@@ -6,6 +6,7 @@ angular.module('googleSpaceteam', [
   'firebase',
   'join',
   'room',
+  'roomServices',
 ]).
 
 config(['$routeProvider', function($routeProvider) {
