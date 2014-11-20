@@ -9,7 +9,7 @@ angular.module('room', ['ngRoute', 'firebase'])
   });
 }])
 
-.controller('RoomCtrl', ['$scope', '$routeParams', '$firebase', '$location', 'levelGenerator', function($scope, $routeParams, $firebase, $location, levelGenerator) {
+.controller('RoomCtrl', ['$scope', '$routeParams', '$firebase', function($scope, $routeParams, $firebase) {
   var gadgetRef = null;
   var timeout = null;
   
@@ -40,11 +40,9 @@ angular.module('room', ['ngRoute', 'firebase'])
   
   // start the level once we have gadgets
   // TODO wait until everyone has loaded the room
-  var gadgetsWatcher = $scope.$watch("level.gadgets", function(newValue, oldValue) {
-    console.log("$scope.$watch");
+  $scope.$watch("level.gadgets", function(newValue, oldValue) {
     if (newValue !== undefined && oldValue === undefined && $scope.progress === 'in-progress') {
       generateInstruction();
-      gadgetsWatcher();
     }
   });
 
@@ -58,7 +56,7 @@ angular.module('room', ['ngRoute', 'firebase'])
     var stateKey = selectRandomKey(gadget.possible);
     var state = gadget.possible[stateKey];
     while (state === gadget.state || 
-      (oldInstruction != null && gadgetKey === oldInstruction.gadgetKey && state === oldInstruction.state)) {
+      (oldInstruction != null && gadget.name === oldInstruction.name && state === oldInstruction.state)) {
       stateKey = selectRandomKey(gadget.possible);
       state = gadget.possible[stateKey];
     }
@@ -127,10 +125,7 @@ angular.module('room', ['ngRoute', 'firebase'])
 
   // Set the state of the gadget based on button pushes
   var setGadgetState = function(gadgetKey, state) {
-    console.log("start setGadget", gadgetKey, state);
     gadgetsRef.child(gadgetKey).child("state").set(state);
-    console.log("end setGadget", gadgetKey, state);
-    // TODO probably should kick things off locally because it's possible that gadgetRef gets removed
   };
 
   // Determine if you won or lost
@@ -150,13 +145,6 @@ angular.module('room', ['ngRoute', 'firebase'])
     levelRef.child('tasks').off('value');
     $scope.progress = "win";
     $scope.instruction = null;
-
-    // move onto next level
-    levelGenerator().then(function(level) {
-      var newLevel = parseInt($routeParams.level) + 1;
-      levelRef.parent().child(newLevel).update(level);
-      $location.path('room/' + $routeParams.roomKey + '/' + newLevel);
-    });
   };
 
   var lose = function() {
@@ -167,7 +155,6 @@ angular.module('room', ['ngRoute', 'firebase'])
   };
 
   // Expose click handlers
-  $scope.levelNumber = $routeParams.level;
   $scope.generateInstruction = generateInstruction; 
   $scope.setGadgetState = setGadgetState;
 }]);

@@ -9,7 +9,7 @@ angular.module('join', ['ngRoute', 'firebase'])
   });
 }])
 
-.controller('JoinCtrl', ['$scope', '$firebase', '$location', 'levelGenerator', function($scope, $firebase, $location, levelGenerator) {
+.controller('JoinCtrl', ['$scope', '$firebase', '$location', function($scope, $firebase, $location) {
   var ref = new Firebase("https://google-spaceteam.firebaseio.com");
   var sync = $firebase(ref);
   var syncObject = sync.$asObject();
@@ -28,10 +28,29 @@ angular.module('join', ['ngRoute', 'firebase'])
   };
 
   $scope.startRoom = function() {
-    ref.child($scope.room.name).update({ state: "ungenerated"});
-    levelGenerator().then(function(level) {
-      ref.child($scope.room.name).child("level/1").update(level);
-      $location.path('room/' + $scope.room.name + "/1");
+    $location.path('room/' + $scope.room.name + "/1");
+    var roomRef = ref.child($scope.room.name);
+    var roomSync = $firebase(roomRef);
+    roomSync.$update({
+      state: "ungenerated",
+      level: {
+        1: {
+          tasks: { completed: 0, failed: 0 },
+          gadgets: {
+            push1: {
+              name: "Carrots",
+              possible: {push0:0, push1:1, push2:2, push3:3, push4:4},
+              state: 0
+            },
+            push2: {
+              name: "Cabbage",
+              possible: {push0:0, push1:1, push2:2, push3:3, push4:4},
+              state: 0
+            }
+          }
+        }
+      }
     });
   };
+
 }]);
