@@ -18,4 +18,26 @@ config(['$routeProvider', function($routeProvider) {
   return function(items) {
     return items.slice().reverse();
   };
+})
+
+.factory('helper', function() {
+  var selectRandomKey = function(dict) {
+    var keys = Object.keys(dict);
+    var selectedKey = keys[Math.floor(Math.random() * keys.length)];
+    return selectedKey;
+  };
+
+  var savedUsername = null;
+  var setUsername = function(username) {
+    savedUsername = username;
+  };
+  var getUsername = function() {
+    return savedUsername;
+  };
+  
+  return {
+    selectRandomKey: selectRandomKey,
+    setUsername: setUsername,
+    getUsername: getUsername,
+  };
 });

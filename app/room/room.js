@@ -9,7 +9,7 @@ angular.module('room', ['ngRoute', 'firebase'])
   });
 }])
 
-.controller('RoomCtrl', ['$scope', '$routeParams', '$firebase', '$location', 'levelGenerator', function($scope, $routeParams, $firebase, $location, levelGenerator) {
+.controller('RoomCtrl', ['$scope', '$routeParams', '$firebase', '$location', 'levelGenerator', 'helper', function($scope, $routeParams, $firebase, $location, levelGenerator, helper) {
   var gadgetRef = null;
   var timeout = null;
   
@@ -24,13 +24,6 @@ angular.module('room', ['ngRoute', 'firebase'])
     gadgetRef = null;
     timeout = null;
   }
-
-  // helper method
-  var selectRandomKey = function(dict) {
-    var keys = Object.keys(dict);
-    var selectedKey = keys[Math.floor(Math.random() * keys.length)];
-    return selectedKey;
-  };
 
   // Reference to the level
   var levelRef = new Firebase("https://google-spaceteam.firebaseio.com").child($routeParams.roomKey)
@@ -52,44 +45,45 @@ angular.module('room', ['ngRoute', 'firebase'])
   $scope.pastInstructions = [];
 
   // Creates a random instruction
-  var randomInstruction = function(oldInstruction) {
-    var gadgetKey = selectRandomKey($scope.level.gadgets);
+  var randomInstruction = function() {
+    var gadgetKey = helper.selectRandomKey($scope.level.gadgets);
     var gadget = $scope.level.gadgets[gadgetKey];
-    var stateKey = selectRandomKey(gadget.possible);
+    var stateKey = helper.selectRandomKey(gadget.possible);
     var state = gadget.possible[stateKey];
-    while (state === gadget.state || 
-      (oldInstruction != null && gadgetKey === oldInstruction.gadgetKey && state === oldInstruction.state)) {
-      stateKey = selectRandomKey(gadget.possible);
-      state = gadget.possible[stateKey];
-    }
-    return {gadgetKey : gadgetKey, name: gadget.name, display: gadget.display, state: state};
+    return {gadgetKey : gadgetKey, gadget: gadget, state: state};
   }; 
   
   // Generate a new instruction and do setup 
   var generateInstruction = function() {
     cleanup();
-      var instruction = randomInstruction($scope.instruction);
-      $scope.instruction = instruction;
+    var oldInstruction = $scope.instruction;
+    var instruction = randomInstruction();
+    while (instruction.state === instruction.gadget.state || (oldInstruction != null && instruction.gadgetKey === oldInstruction.gadgetKey && instruction.state === oldInstruction.state)) {
+      instruction = randomInstruction();
+    }
+    console.log(instruction);
+    instruction.text = instruction.gadget.display.format(instruction.state);
+    $scope.instruction = instruction;
 
-      // listen for when the instruction is completed
-      gadgetRef = levelRef.child("gadgets/" + instruction.gadgetKey + "/state");
-      gadgetRef.on("value", function(snap) {
-        if (snap.val() === instruction.state) {
-          incrementCompleted();
-        }
-      });
+    // listen for when the instruction is completed
+    gadgetRef = levelRef.child("gadgets/" + instruction.gadgetKey + "/state");
+    gadgetRef.on("value", function(snap) {
+      if (snap.val() === instruction.state) {
+        incrementCompleted();
+      }
+    });
 
-      // set a timeout after which point the instruction failed
-      timeout = setTimeout(function() {
-        incrementFailed();
-      }, 3000);
+    // set a timeout after which point the instruction failed
+    timeout = setTimeout(function() {
+      incrementFailed();
+    }, 3000);
   };
 
   // keep track of how many have been completed 
   var incrementCompleted = function() {
     var instruction = $scope.instruction;
     instruction['completed'] = true;
-    $scope.pastInstructions.push(instruction);
+    $scope.pastInstructions.push(instruction.text);
 
     cleanup();
     generateInstruction();
@@ -120,15 +114,14 @@ angular.module('room', ['ngRoute', 'firebase'])
     });
   }; 
   
-  // Actually displaying the gadgets
-  var gadgetsRef = levelRef.child("gadgets");
-  var gadgetsSync = $firebase(gadgetsRef);
-  gadgetsSync.$asObject().$bindTo($scope, "gadgets");
-
+  // Bind gadgets for display
+  var myGadgetsRef = levelRef.child("gadgets").orderByChild("owner").equalTo(helper.getUsername()); 
+  $firebase(myGadgetsRef).$asObject().$bindTo($scope, "gadgets");
+  
   // Set the state of the gadget based on button pushes
   var setGadgetState = function(gadgetKey, state) {
     console.log("start setGadget", gadgetKey, state);
-    gadgetsRef.child(gadgetKey).child("state").set(state);
+    levelRef.child("gadgets").child(gadgetKey).child("state").set(state);
     console.log("end setGadget", gadgetKey, state);
     // TODO probably should kick things off locally because it's possible that gadgetRef gets removed
   };
@@ -154,7 +147,8 @@ angular.module('room', ['ngRoute', 'firebase'])
     // move onto next level
     levelGenerator().then(function(level) {
       var newLevel = parseInt($routeParams.level) + 1;
-      levelRef.parent().child(newLevel).update(level);
+      levelRef.parent().child(newLevel).child("tasks").update(level.tasks);
+      levelRef.parent().child(newLevel).child("gadgets").update(level.gadgets);
       $location.path('room/' + $routeParams.roomKey + '/' + newLevel);
     });
   };
@@ -165,9 +159,10 @@ angular.module('room', ['ngRoute', 'firebase'])
     $scope.progress = "lose";
     $scope.instruction = null;
   };
-
+  
   // Expose click handlers
   $scope.levelNumber = $routeParams.level;
+  $scope.username = helper.getUsername();
   $scope.generateInstruction = generateInstruction; 
   $scope.setGadgetState = setGadgetState;
 }]);

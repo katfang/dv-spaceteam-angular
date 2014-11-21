@@ -9,7 +9,7 @@ angular.module('join', ['ngRoute', 'firebase'])
   });
 }])
 
-.controller('JoinCtrl', ['$scope', '$firebase', '$location', 'levelGenerator', function($scope, $firebase, $location, levelGenerator) {
+.controller('JoinCtrl', ['$scope', '$firebase', '$location', 'levelGenerator', 'helper', function($scope, $firebase, $location, levelGenerator, helper) {
   var ref = new Firebase("https://google-spaceteam.firebaseio.com");
   var sync = $firebase(ref);
   var syncObject = sync.$asObject();
@@ -20,17 +20,18 @@ angular.module('join', ['ngRoute', 'firebase'])
   $scope.joinRoom = function() {
     var roomRef = ref.child($scope.room.name);
     var usersRef = roomRef.child("users");
-    var usersSync = $firebase(usersRef);
-    var updateObj = {};
-    updateObj[$scope.username] = true; //TODO: tx to check that the username isn't taken or do anon user thing
-    usersSync.$update(updateObj);
+    var usersUpdateDict = {};
+    usersUpdateDict[$scope.username] = true;
+    usersRef.update(usersUpdateDict); //TODO: tx to check that the username isn't taken or do anon user thing
+    helper.setUsername($scope.username);
     $scope.roomSet = true;
   };
 
   $scope.startRoom = function() {
     ref.child($scope.room.name).update({ state: "ungenerated"});
-    levelGenerator().then(function(level) {
-      ref.child($scope.room.name).child("level/1").update(level);
+    levelGenerator($scope.username).then(function(level) {
+      ref.child($scope.room.name).child("level/1/tasks").update(level.tasks);
+      ref.child($scope.room.name).child("level/1/gadgets").update(level.gadgets);
       $location.path('room/' + $scope.room.name + "/1");
     });
   };
