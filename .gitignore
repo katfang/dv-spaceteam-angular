@@ -1,0 +1,14 @@
+LICENSE
+README.md
+app/book/*
+app/components/*
+app/index-async.html
+*.log
+*.swp
+app/view1
+app/view2
+bower_components
+e2e-tests
+gadgets-backup.json
+karma.conf.js
+node_modules
