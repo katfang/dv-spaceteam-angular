@@ -1,7 +1,19 @@
-<p>Enter your name: <input ng-model="username"></p>
-<p>Enter room name: <input ng-model="room.name"></p>
+<div ng-switch="joinState">
+  <div ng-switch-when="no-auth">Waiting for server ...</div>
+  
+  <div ng-switch-when="no-room">
+    <p>Room name: <input ng-model="$parent.room"></p>
+    <p><button ng-click="joinRoom()">Join room!</button></p>
+  </div>
 
-<p ng-switch="roomSet">
-  <button ng-switch-when="true" ng-click="startRoom()">Start the {{ room.name }} game</button>
-  <button ng-switch-default ng-click="joinRoom()">Join {{ room.name }} room</button>
+  <div ng-switch-when="waiting">
+    <p><button ng-click="startRoom()">Start the {{ room.name }} game</button></p>
+  </div>
+
+  <div ng-switch-when="ready">
+    <p>Waiting for other players...</p>
+  </div>
+
+</div>
+
 </p>

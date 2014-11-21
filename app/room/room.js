@@ -10,6 +10,10 @@ angular.module('room', ['ngRoute', 'firebase'])
 }])
 
 .controller('RoomCtrl', ['$scope', '$routeParams', '$firebase', '$location', 'levelGenerator', 'helper', function($scope, $routeParams, $firebase, $location, levelGenerator, helper) {
+  var authRef = new Firebase("https://google-spaceteam.firebaseio.com");
+  $scope.auth = authRef.getAuth();
+  $scope.uid = $scope.auth.uid;
+  
   var gadgetRef = null;
   var timeout = null;
   
@@ -115,7 +119,7 @@ angular.module('room', ['ngRoute', 'firebase'])
   }; 
   
   // Bind gadgets for display
-  var myGadgetsRef = levelRef.child("gadgets").orderByChild("owner").equalTo(helper.getUsername()); 
+  var myGadgetsRef = levelRef.child("gadgets").orderByChild("owner").equalTo($scope.uid);
   $firebase(myGadgetsRef).$asObject().$bindTo($scope, "gadgets");
   
   // Set the state of the gadget based on button pushes
@@ -162,7 +166,6 @@ angular.module('room', ['ngRoute', 'firebase'])
   
   // Expose click handlers
   $scope.levelNumber = $routeParams.level;
-  $scope.username = helper.getUsername();
   $scope.generateInstruction = generateInstruction; 
   $scope.setGadgetState = setGadgetState;
 }]);

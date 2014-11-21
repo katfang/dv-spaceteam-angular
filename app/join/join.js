@@ -9,30 +9,97 @@ angular.module('join', ['ngRoute', 'firebase'])
   });
 }])
 
-.controller('JoinCtrl', ['$scope', '$firebase', '$location', 'levelGenerator', 'helper', function($scope, $firebase, $location, levelGenerator, helper) {
+.controller('JoinCtrl', ['$scope', '$firebase', '$location', 'gadgetsGenerator', function($scope, $firebase, $location, gadgetsGenerator) {
   var ref = new Firebase("https://google-spaceteam.firebaseio.com");
-  var sync = $firebase(ref);
-  var syncObject = sync.$asObject();
-  syncObject.$bindTo($scope, "data");
+  $scope.joinState = "no-auth"; // options are no-auth -> no-room -> waiting -> ready 
 
-  $scope.roomSet = false;
-  
+  // Get authentication
+  $scope.auth = null;
+  $scope.uid = null;
+  var authUnwatcher = $scope.$watch("auth", function(newValue, oldValue) {
+    if (newValue !== null) {
+      $scope.uid = newValue.uid;
+      $scope.joinState = "no-room";
+      authUnwatcher();
+    }
+  });
+  $scope.auth = ref.getAuth();
+  if ($scope.auth === null) {
+    ref.authAnonymously(function(error, authData) {
+      if (error !== null) {
+        console.log("Error authenticating anonymously", error);
+      } else {
+        $scope.$apply($scope.auth = authData);
+      }
+    }, {remember: "sessionOnly"}); 
+  }
+
   $scope.joinRoom = function() {
-    var roomRef = ref.child($scope.room.name);
+    var roomRef = ref.child($scope.room);
+    $scope.joinState = "waiting";
+    
+    // set user in the room
     var usersRef = roomRef.child("users");
     var usersUpdateDict = {};
-    usersUpdateDict[$scope.username] = true;
+    usersUpdateDict[$scope.uid] = true;
     usersRef.update(usersUpdateDict); //TODO: tx to check that the username isn't taken or do anon user thing
-    helper.setUsername($scope.username);
-    $scope.roomSet = true;
-  };
 
-  $scope.startRoom = function() {
-    ref.child($scope.room.name).update({ state: "ungenerated"});
-    levelGenerator($scope.username).then(function(level) {
-      ref.child($scope.room.name).child("level/1/tasks").update(level.tasks);
-      ref.child($scope.room.name).child("level/1/gadgets").update(level.gadgets);
-      $location.path('room/' + $scope.room.name + "/1");
+    // generate gadgets and set user in the level
+    // START SERVER FUNC
+    gadgetsGenerator().then(function(gadgets) {
+      ref.child($scope.room).child("level/1/gadgets").update(gadgets);
+      ref.child($scope.room).child("level/1/users").update(usersUpdateDict);
     });
+    // END SERVER FUNC
+    
+    // listen for when the room begins
+    var beginCallback = function(snap) {
+      if (snap.val() === "ready") {
+        console.log("inside", 'room/' + $scope.room + '/1');
+        $location.path('room/' + $scope.room + "/1");
+        roomRef.child("level/1/state").off('value', beginCallback);
+        $scope.$apply();
+      }
+    };
+    roomRef.child("level/1/state").on('value', beginCallback); 
+  };
+  
+  $scope.startRoom = function() {
+    var roomRef = ref.child($scope.room);
+    
+    // set room so server knows we're ready to start
+    roomRef.child("level/1/state").set('waiting');
+
+    // START HOST CODE 
+    // set tasks
+    roomRef.child("level/1/tasks").set({completed:0, failed:0});
+
+    // check users in room == users in level 
+    var numInRoom = null;
+    var numInLevel = null;
+    var roomUsersRef = roomRef.child("users");
+    var levelUsersRef = roomRef.child("level/1/users");
+    var roomCallback = function(snap) {
+      if (snap.val() !== null) {
+        numInRoom = snap.numChildren();
+        checkForStart();
+      }
+    }; 
+    var levelCallback = function(snap) {
+      if (snap.val() !== null) {
+        numInLevel = snap.numChildren();
+        checkForStart();
+      }
+    };
+    var checkForStart = function() {
+      if (numInRoom !== null && numInLevel !== null && numInRoom === numInLevel) {
+        roomUsersRef.off('value', roomCallback);
+        levelUsersRef.off('value', levelCallback);
+        roomRef.child("level/1/state").set('ready');
+      }
+    };
+    roomUsersRef.on('value', roomCallback);
+    levelUsersRef.on('value', levelCallback);
+    // END HOST CODE
   };
 }]);

@@ -2,6 +2,38 @@
 
 angular.module('roomServices', ['firebase'])
 
+.factory('gadgetsGenerator', ['$firebase', '$q', 'helper', function($firebase, $q, helper) {
+  var ref = new Firebase("https://google-spaceteam.firebaseio.com/-gadgets");
+  var auth = ref.getAuth();
+  ref.onAuth(function(authData) {
+    auth = authData;
+  });
+
+  return function() {
+    var deferred = $q.defer();
+    if (auth === null) {
+      deferred.reject("No authentication data");
+    } else {
+      var uid = auth.uid;
+      var callback = function(snap) {
+        var allGadgets = snap.val();
+        if (allGadgets !== null) {
+          ref.off('value', callback);
+          var gadgets = {};
+          while (Object.keys(gadgets).length < 5) {
+            var gadgetKey = helper.selectRandomKey(allGadgets);
+            gadgets[gadgetKey] = allGadgets[gadgetKey];
+            gadgets[gadgetKey].owner = uid;
+          }
+          deferred.resolve(gadgets);
+        }
+      };
+    }
+    ref.on('value', callback);
+    return deferred.promise;
+  };
+}])
+
 .factory('levelGenerator', ['$firebase', '$q', 'helper', function($firebase, $q, helper) {
   var ref = new Firebase("https://google-spaceteam.firebaseio.com/-gadgets");
   return function(username) {
