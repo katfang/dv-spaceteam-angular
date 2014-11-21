@@ -7,6 +7,7 @@ angular.module('googleSpaceteam', [
   'join',
   'room',
   'roomServices',
+  'stringFormatterModule'
 ]).
 
 config(['$routeProvider', function($routeProvider) {
@@ -18,4 +19,3 @@ config(['$routeProvider', function($routeProvider) {
     return items.slice().reverse();
   };
 });
-

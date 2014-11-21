@@ -62,7 +62,7 @@ angular.module('room', ['ngRoute', 'firebase'])
       stateKey = selectRandomKey(gadget.possible);
       state = gadget.possible[stateKey];
     }
-    return {gadgetKey : gadgetKey, name: gadget.name, state: state};
+    return {gadgetKey : gadgetKey, name: gadget.name, display: gadget.display, state: state};
   }; 
   
   // Generate a new instruction and do setup 

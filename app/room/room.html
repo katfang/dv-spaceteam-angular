@@ -6,7 +6,7 @@
 <p>Failed: {{ level.tasks.failed || 0 }}</p>
 
 <button ng-if="readyToStart" ng-click="generateInstruction()">Start generating instructions</button>
-<p ng-if="instruction != null">Set {{ instruction.name }} to {{ instruction.state }}</p>
+<p ng-if="instruction != null">{{ instruction.display | stringFormat:[instruction.state] }}</p>
 
 <ul>
 <li ng-repeat="(gadgetKey, gadget) in gadgets">
