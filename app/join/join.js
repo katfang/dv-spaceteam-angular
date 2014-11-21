@@ -9,7 +9,7 @@ angular.module('join', ['ngRoute', 'firebase'])
   });
 }])
 
-.controller('JoinCtrl', ['$scope', '$firebase', '$location', 'gadgetsGenerator', function($scope, $firebase, $location, gadgetsGenerator) {
+.controller('JoinCtrl', ['$scope', '$firebase', '$location', 'gadgetsGenerator', 'host', function($scope, $firebase, $location, gadgetsGenerator, host) {
   var ref = new Firebase("https://google-spaceteam.firebaseio.com");
   $scope.joinState = "no-auth"; // options are no-auth -> no-room -> waiting -> ready 
 
@@ -29,7 +29,8 @@ angular.module('join', ['ngRoute', 'firebase'])
       if (error !== null) {
         console.log("Error authenticating anonymously", error);
       } else {
-        $scope.$apply($scope.auth = authData);
+        $scope.auth = authData;
+        $scope.$apply();
       }
     }, {remember: "sessionOnly"}); 
   }
@@ -41,12 +42,12 @@ angular.module('join', ['ngRoute', 'firebase'])
     // set user in the room
     var usersRef = roomRef.child("users");
     var usersUpdateDict = {};
-    usersUpdateDict[$scope.uid] = true;
+    usersUpdateDict[$scope.uid] = false;
     usersRef.update(usersUpdateDict); //TODO: tx to check that the username isn't taken or do anon user thing
 
     // generate gadgets and set user in the level
     // START SERVER FUNC
-    gadgetsGenerator().then(function(gadgets) {
+    gadgetsGenerator.newGadgets().then(function(gadgets) {
       ref.child($scope.room).child("level/1/gadgets").update(gadgets);
       ref.child($scope.room).child("level/1/users").update(usersUpdateDict);
     });
@@ -55,7 +56,6 @@ angular.module('join', ['ngRoute', 'firebase'])
     // listen for when the room begins
     var beginCallback = function(snap) {
       if (snap.val() === "ready") {
-        console.log("inside", 'room/' + $scope.room + '/1');
         $location.path('room/' + $scope.room + "/1");
         roomRef.child("level/1/state").off('value', beginCallback);
         $scope.$apply();
@@ -71,9 +71,12 @@ angular.module('join', ['ngRoute', 'firebase'])
     roomRef.child("level/1/state").set('waiting');
 
     // START HOST CODE 
-    // set tasks
-    roomRef.child("level/1/tasks").set({completed:0, failed:0});
+    var levelRef = roomRef.child("level/1");
+    host.initTasks(levelRef);
+    host.checkLevelGenerated(levelRef);
+    // roomRef.child("level/1/tasks").set({completed:0, failed:0});
 
+    /*
     // check users in room == users in level 
     var numInRoom = null;
     var numInLevel = null;
@@ -100,6 +103,6 @@ angular.module('join', ['ngRoute', 'firebase'])
     };
     roomUsersRef.on('value', roomCallback);
     levelUsersRef.on('value', levelCallback);
-    // END HOST CODE
+    END HOST CODE */
   };
 }]);

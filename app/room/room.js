@@ -9,7 +9,7 @@ angular.module('room', ['ngRoute', 'firebase'])
   });
 }])
 
-.controller('RoomCtrl', ['$scope', '$routeParams', '$firebase', '$location', 'levelGenerator', 'helper', function($scope, $routeParams, $firebase, $location, levelGenerator, helper) {
+.controller('RoomCtrl', ['$scope', '$routeParams', '$firebase', '$location', 'levelGenerator', 'gadgetsGenerator', 'host', function($scope, $routeParams, $firebase, $location, levelGenerator, gadgetsGenerator, host) {
   var authRef = new Firebase("https://google-spaceteam.firebaseio.com");
   $scope.auth = authRef.getAuth();
   $scope.uid = $scope.auth.uid;
@@ -29,98 +29,135 @@ angular.module('room', ['ngRoute', 'firebase'])
     timeout = null;
   }
 
-  // Reference to the level
+  // Reference to the level & user (of level)
   var levelRef = new Firebase("https://google-spaceteam.firebaseio.com").child($routeParams.roomKey)
       .child("level").child($routeParams.level);
-  var levelSync = $firebase(levelRef);
-  levelSync.$asObject().$bindTo($scope, "level");
+  var userRef = levelRef.child("users").child($scope.uid);
+
+  // Number of tasks completed / failed 
+  $scope.tasks = null;
+  $firebase(levelRef.child("tasks")).$asObject().$bindTo($scope, "tasks");
+  
+  // Track state 
+  $scope.levelState = null;
+  var stateCallback = function(snap) {
+    $scope.levelState = snap.val();
+    
+    // move onto next level
+    if ($scope.levelState === 'win') { 
+      var newLevel = parseInt($routeParams.level) + 1;
+      var newLevelRef = levelRef.parent().child(newLevel);
+
+      // START SERVER FUNC
+      // generate gadgets for the next level
+      gadgetsGenerator.newGadgets().then(function(gadgets) {
+        newLevelRef.child("gadgets").update(gadgets);
+        var usersUpdateDict = {};
+        usersUpdateDict[$scope.uid] = false;
+        newLevelRef.child("users").update(usersUpdateDict);
+      });
+      // END SERVER FUNC
+
+      // START HOST CODE
+      host.initTasks(newLevelRef);
+      host.checkLevelGenerated(newLevelRef);
+      // END HOST CODE
+
+      // listen for next level
+      var beginCallback = function(snap) {
+        if (snap.val() === "ready") {
+          $location.path('room/' + $routeParams.roomKey + '/' + newLevel);
+          newLevelRef.child("state").off('value', beginCallback);
+          $scope.$apply();
+        }
+      };
+      newLevelRef.child('state').on('value', beginCallback);
+      levelRef.child('state').off('value', stateCallback);
+    }
+  };
+  levelRef.child("state").on('value', stateCallback);
   
   // start the level once we have gadgets
   // TODO wait until everyone has loaded the room
-  var gadgetsWatcher = $scope.$watch("level.gadgets", function(newValue, oldValue) {
-    console.log("$scope.$watch");
-    if (newValue !== undefined && oldValue === undefined && $scope.progress === 'in-progress') {
-      generateInstruction();
-      gadgetsWatcher();
+  $firebase(levelRef.child("gadgets")).$asObject().$bindTo($scope, "gadgets");
+  var gadgetsUnwatcher = $scope.$watch("gadgets", function(newValue, oldValue) {
+    if (newValue !== undefined && oldValue === undefined && 
+       ($scope.levelState !== 'win' && $scope.levelState !== 'lose')) {
+      setInstruction();
+      gadgetsUnwatcher();
     }
   });
 
   // Keep track of old instructions
   $scope.pastInstructions = [];
-
-  // Creates a random instruction
-  var randomInstruction = function() {
-    var gadgetKey = helper.selectRandomKey($scope.level.gadgets);
-    var gadget = $scope.level.gadgets[gadgetKey];
-    var stateKey = helper.selectRandomKey(gadget.possible);
-    var state = gadget.possible[stateKey];
-    return {gadgetKey : gadgetKey, gadget: gadget, state: state};
-  }; 
   
-  // Generate a new instruction and do setup 
-  var generateInstruction = function() {
-    cleanup();
+  // START SERVER FUNC
+  var setInstruction = function() {
     var oldInstruction = $scope.instruction;
-    var instruction = randomInstruction();
-    while (instruction.state === instruction.gadget.state || (oldInstruction != null && instruction.gadgetKey === oldInstruction.gadgetKey && instruction.state === oldInstruction.state)) {
-      instruction = randomInstruction();
+    var instruction = gadgetsGenerator.randomInstruction($scope.gadgets);
+    while (instruction.state === instruction.gadgetCurrentState || 
+          (oldInstruction !== null && instruction.gadgetKey === oldInstruction.gadgetKey && instruction.state === oldInstruction.state)) {
+      instruction = gadgetsGenerator.randomInstruction($scope.gadgets);
     }
-    console.log(instruction);
-    instruction.text = instruction.gadget.display.format(instruction.state);
-    $scope.instruction = instruction;
-
-    // listen for when the instruction is completed
-    gadgetRef = levelRef.child("gadgets/" + instruction.gadgetKey + "/state");
-    gadgetRef.on("value", function(snap) {
-      if (snap.val() === instruction.state) {
-        incrementCompleted();
-      }
-    });
-
-    // set a timeout after which point the instruction failed
-    timeout = setTimeout(function() {
-      incrementFailed();
-    }, 3000);
+    userRef.set(instruction);
   };
+  // END SERVER FUNC 
 
-  // keep track of how many have been completed 
-  var incrementCompleted = function() {
+  // Listen for instruction 
+  $scope.instruction = null;
+  var userStateCallback = function(snap) {
+    if (snap.val() !== null) {
+      var userState = snap.val();
+      
+      // we have instruction
+      if (userState !== false && userState !== true && $scope.levelState === 'ready') {
+        cleanup();
+        $scope.instruction = snap.val();
+
+        // listen for when the instruction is completed
+        gadgetRef = levelRef.child("gadgets/" + $scope.instruction.gadgetKey + "/state");
+        gadgetRef.on("value", function(gadgetSnap) {
+          if (gadgetSnap.val() === $scope.instruction.state) {
+            taskEnded(/* completed = */ true);
+          }
+        });
+
+        // set a timeout after which point the instruction failed
+        timeout = setTimeout(function() {
+          taskEnded(/* completed = */ false);
+        }, 3000);
+      }
+    }
+  };
+  userRef.on('value', userStateCallback);
+
+  // finish task whether completed or failed 
+  var taskEnded = function(completed) {
     var instruction = $scope.instruction;
-    instruction['completed'] = true;
-    $scope.pastInstructions.push(instruction.text);
-
+    instruction['completed'] = completed;
+    $scope.pastInstructions.push(instruction);
     cleanup();
-    generateInstruction();
     
     levelRef.child('tasks').transaction(function(currentData) {
       if (currentData === null) {
-        return {'completed': 1, 'failed': 0};
+        return {completed: 0, failed: 0};
       }
-      currentData.completed += 1; 
+
+      if (completed) {
+        currentData.completed += 1; 
+      } else {
+        currentData.failed += 1;
+      }
+
       return currentData;
     });
-  }; 
 
-  // keep track of how many have been failed 
-  var incrementFailed = function() {
-    var instruction = $scope.instruction;
-    instruction['completed'] = false;
-    $scope.pastInstructions.push(instruction);
-
-    cleanup();
-    generateInstruction(); 
-    levelRef.child('tasks').transaction(function(currentData) {
-      if (currentData === null) {
-        return {'completed': 0, 'failed': 1};
-      }
-      currentData.failed += 1; 
-      return currentData;
-    });
+    setInstruction();
   }; 
   
   // Bind gadgets for display
   var myGadgetsRef = levelRef.child("gadgets").orderByChild("owner").equalTo($scope.uid);
-  $firebase(myGadgetsRef).$asObject().$bindTo($scope, "gadgets");
+  $firebase(myGadgetsRef).$asObject().$bindTo($scope, "ownedGadgets");
   
   // Set the state of the gadget based on button pushes
   var setGadgetState = function(gadgetKey, state) {
@@ -130,42 +167,37 @@ angular.module('room', ['ngRoute', 'firebase'])
     // TODO probably should kick things off locally because it's possible that gadgetRef gets removed
   };
 
+  // START HOST CODE
   // Determine if you won or lost
-  $scope.progress = "in-progress"
-  levelRef.child('tasks').on('value', function(snap) {
-    if (snap.val() === null) { 
-      $scope.progress = "in-progress"
-    } else if (snap.val().completed >= 10) {
-      win();
-    } else if (snap.val().failed >= 10) {
-      lose();
+  $scope.$watch("tasks", function(newValue) {
+    if (newValue !== null) { 
+      if (newValue.completed >= 10) {
+        setFinalState("win"); 
+      } else if (newValue.failed >= 10) {
+        setFinalState("lose");
+      }
     }
   });
+  // END HOST CODE
   
-  var win = function() {
-    cleanup();
-    levelRef.child('tasks').off('value');
-    $scope.progress = "win";
-    $scope.instruction = null;
-
-    // move onto next level
-    levelGenerator().then(function(level) {
-      var newLevel = parseInt($routeParams.level) + 1;
-      levelRef.parent().child(newLevel).child("tasks").update(level.tasks);
-      levelRef.parent().child(newLevel).child("gadgets").update(level.gadgets);
-      $location.path('room/' + $routeParams.roomKey + '/' + newLevel);
+  var setFinalState = function(state) {
+    finalCleanup();
+    levelRef.child("state").transaction(function(currentData) {
+      if (currentData === "ready") {
+        return state; 
+      } else {
+        return undefined;
+      }
     });
-  };
-
-  var lose = function() {
+  }; 
+  
+  var finalCleanup = function() {
     cleanup();
-    levelRef.child('tasks').off('value');
-    $scope.progress = "lose";
     $scope.instruction = null;
   };
   
   // Expose click handlers
   $scope.levelNumber = $routeParams.level;
-  $scope.generateInstruction = generateInstruction; 
+  $scope.setInstruction = setInstruction; 
   $scope.setGadgetState = setGadgetState;
 }]);
