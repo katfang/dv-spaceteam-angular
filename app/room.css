@@ -7,8 +7,8 @@
   flex-flow: row wrap;
 }
 
-.gadgets > div {
-  padding:20px;
+.button-gadget {
+  padding:0px 20px;
 }
 
 .button-gadget > button {
@@ -16,6 +16,14 @@
   width: 100%;
   margin:5px;
   text-align: left;
+}
+
+.slider-gadget {
+  text-align: center;
+}
+
+.slider {
+  -webkit-appearance: slider-vertical
 }
 
 .instructions-console {

@@ -1,9 +1,9 @@
 
 <div class="gadgets">
   <div ng-repeat="(gadgetKey, gadget) in ownedGadgets" ng-switch="gadget.type">
-    <button-gadget ng-switch-when="button" key="gadgetKey" gadget="gadget"></button-gadget> 
-    <slider-gadget ng-switch-when="slider" key="gadgetKey" gadget="gadget"></slider-gadget> 
-    <button-gadget ng-switch-when="dropdown" key="gadgetKey" gadget="gadget"></button-gadget> 
+    <button-gadget ng-switch-when="button" key="gadgetKey" gadget="gadget" room-metadata="roomMetadata"></button-gadget> 
+    <slider-gadget ng-switch-when="slider" key="gadgetKey" gadget="gadget" room-metadata="roomMetadata" state="gadget.state"></slider-gadget>
+    <button-gadget ng-switch-when="dropdown" key="gadgetKey" gadget="gadget" room-metadata="roomMetadata"></button-gadget> 
   </div> 
 
 

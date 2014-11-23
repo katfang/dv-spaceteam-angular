@@ -1,4 +1,4 @@
-<div class="button-gadget">
+<div class="button-gadget" id="{{ key }}">
   {{gadget.name}}<br /> 
-  <button ng-repeat="state in gadget.possible" ng-click="setGadgetState(key, state)">{{state}}</button>
+  <button ng-repeat="state in gadget.possible">{{state}}</button>
 </div>

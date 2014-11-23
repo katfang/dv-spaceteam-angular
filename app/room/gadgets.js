@@ -3,53 +3,45 @@
 // Declare app level module which depends on views, and components
 angular.module('gadgets', [])
 
-.directive('buttonGadget', function() {
+.directive('buttonGadget', ['$timeout', function($timeout) {
   return {
     restrict: 'E',
     templateUrl: 'room/button-gadget.html',
     scope: {
-      key: '=key',
-      gadget: '=gadget'
+      key: '=',
+      gadget: '=',
+      room: '=roomMetadata',
+    },
+    link: function($scope, element, attrs) {
+      var ref = new Firebase("https://google-spaceteam.firebaseio.com/" + $scope.room.key + "/level/" + $scope.room.level + "/gadgets/" + $scope.key + "/state");
+      $timeout(function() {
+        $('#' + $scope.key).children("button").each(function(index) {
+          $(this).on('click', function(event) { 
+            ref.set($(this).text());
+          });
+        });
+      });
     }
   };
-})
+}])
 
 .directive('sliderGadget', ['$timeout', function($timeout) {
   return {
     restrict: 'E',
     templateUrl: 'room/slider-gadget.html',
     scope: {
-      key: '=key',
-      gadget: '=gadget'
+      key: '=',
+      gadget: '=',
+      room: '=roomMetadata',
+      state: '='
     },
-    link: function(scope, element, attrs) {
-      /* JQUERY
-      $(window).load(function() {
-        console.log($('#slider' + scope.key));
-        $('#slider' + scope.key).slider({
-          value:100,
-          min: 0,
-          max: 500,
-          step: 50,
-          slide: function( event, ui ) {
-            console.log(ui.value);
-          }
-        });
-      }); // */
-
-      //* BOOTSTRAP
-      var slider = null;
-      $timeout(function () {
-        slider = $('#' + scope.key).slider({
-          formatter: function(value) {
-            console.log("What about now?", value);
-            return 'Current value: ' + value;
-          }
-        });
-        // listen to ref
-        slider.slider('setValue', 7);
-        console.log(slider.slider);
-      }); //*/
+    link: function($scope, element, attrs) {
+      $timeout(function() {
+        var sliderElem = document.getElementById($scope.key);
+        sliderElem.addEventListener("input", function() {
+          $scope.state = parseInt(sliderElem.value);
+        }, false);
+      });
     }
   };
 }]);

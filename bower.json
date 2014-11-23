@@ -14,8 +14,6 @@
     "firebase": "~2.0.x",
     "angularfire": "~0.9.x",
     "jquery": "~2.1.x",
-    "jquery-ui": "~1.11.x",
-    "angular-slider": "~0.2.x",
-    "seiyria-bootstrap-slider": "~4.2.x"
+    "jquery-ui": "~1.11.x"
   }
 }

@@ -160,10 +160,10 @@ angular.module('room', ['ngRoute', 'firebase'])
 
   // finish task whether completed or failed 
   var taskEnded = function(completed) {
+    cleanup();
     var instruction = $scope.instruction;
     instruction['completed'] = completed;
     $scope.pastInstructions.push(instruction);
-    cleanup();
     
     levelRef.child('tasks').transaction(function(currentData) {
       if (currentData === null) {
@@ -189,11 +189,11 @@ angular.module('room', ['ngRoute', 'firebase'])
     if (snap.val() !== null) {
       var gadget = snap.val();
       if (gadget.type === 'slider') {
-        $('#' + snap.key()).val(gadget.state);
+        document.getElementById(snap.key()).value = gadget.state;
       }
     }
   };
-  myGadgetsRef.on('child_changed', sliderGadgetsCallback); 
+  myGadgetsRef.on('child_changed', sliderGadgetsCallback);
   
   // SET state of gadget based on manipulation
   var setGadgetState = function(gadgetKey, state) {
@@ -231,6 +231,7 @@ angular.module('room', ['ngRoute', 'firebase'])
   
   // EXPOSE the needed data and functions 
   $scope.levelNumber = $routeParams.level;
+  $scope.roomMetadata = {key: $routeParams.roomKey, level:$scope.levelNumber};
   $scope.setGadgetState = setGadgetState;
   $rootScope.levelNumber = $scope.levelNumber;
   $rootScope.showFooter = true;
