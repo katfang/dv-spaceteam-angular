@@ -23,7 +23,7 @@ angular.module('gadgets', [])
       gadget: '=gadget'
     },
     link: function(scope, element, attrs) {
-      //* JQUERY
+      /* JQUERY
       $(window).load(function() {
         console.log($('#slider' + scope.key));
         $('#slider' + scope.key).slider({
@@ -37,14 +37,18 @@ angular.module('gadgets', [])
         });
       }); // */
 
-      /* BOOTSTRAP
+      //* BOOTSTRAP
+      var slider = null;
       $timeout(function () {
-        $('#' + scope.key).slider({
+        slider = $('#' + scope.key).slider({
           formatter: function(value) {
             console.log("What about now?", value);
             return 'Current value: ' + value;
           }
-        }); 
+        });
+        // listen to ref
+        slider.slider('setValue', 7);
+        console.log(slider.slider);
       }); //*/
     }
   };
