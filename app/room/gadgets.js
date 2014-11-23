@@ -23,7 +23,7 @@ angular.module('gadgets', [])
       gadget: '=gadget'
     },
     link: function(scope, element, attrs) {
-      /* JQUERY
+      //* JQUERY
       $(window).load(function() {
         console.log($('#slider' + scope.key));
         $('#slider' + scope.key).slider({
@@ -35,9 +35,9 @@ angular.module('gadgets', [])
             console.log(ui.value);
           }
         });
-        */
+      }); // */
 
-        //* BOOTSTRAP
+      /* BOOTSTRAP
       $timeout(function () {
         $('#' + scope.key).slider({
           formatter: function(value) {

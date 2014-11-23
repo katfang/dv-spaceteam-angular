@@ -1,13 +1,13 @@
 <div class="slider-gadget">
 {{ gadget.name }}<br />
 
-<!--input type="range" name="{{ key }}" id="{{ key }}" 
+<input type="range" name="{{ key }}" id="{{ key }}" 
   min="{{ gadget.min }}" max="{{ gadget.max }}" step="{{ gadget.step }}" 
   value="{{ gadget.state || 0 }}">
 
-<div id="slider{{ key }}"></div-->
+<div id="slider{{ key }}"></div>
 
-<input id="{{ key }}" data-slider-id='{{ key }}Slider' type="text" data-slider-min="{{ gadget.min }}" data-slider-max="{{ gadget.max }}" data-slider-step="{{ gadget.step }}" data-slider-value="{{ gadget.state }}" value="{{ gadget.state }}"/>
+<!--input id="{{ key }}" data-slider-id='{{ key }}Slider' type="text" data-slider-min="{{ gadget.min }}" data-slider-max="{{ gadget.max }}" data-slider-step="{{ gadget.step }}" data-slider-value="{{ gadget.state }}" value="{{ gadget.state }}"/-->
 
 {{ gadget.state || 0 }} TB(s)
 </div>
