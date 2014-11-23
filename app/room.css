@@ -1,8 +1,15 @@
-.gadget {
-  padding:20px;
-  float: left; 
+.middle > div {
+  flex: 1 50%;
 }
 
+.gadgets {
+  display: flex;
+  flex-flow: row wrap;
+}
+
+.gadget {
+  padding:20px;
+}
 
 .gadget > button {
   display: block;
@@ -11,16 +18,30 @@
   text-align: left;
 }
 
-.past-instructions {
-  padding-left:20px;
-  float: left;
+.instructions-console {
+  background-color:#373D44; /* midnight */
+  padding: 5px;
+  border: 3px solid #7b8087; /* smoke */
+}
+
+.console-inner {
+  display: flex;
+  flex-flow: column wrap; 
+  justify-content: flex-start;
+  align-content: flex-start;
+  align-items: flex-start;
+  color: #F2F3F7; /* snow */
+  font-family: monospace;
+}
+
+.console-inner > div {
+  padding-bottom: 3px;
 }
 
 .completed {
-  color:green;
+  color: #33CD7B; /* jade */
 }
 
 .failed {
-  color:red;
+  color: #FE464D; /* ember */
 }
-

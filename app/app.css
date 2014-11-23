@@ -10,20 +10,26 @@ html, body {
 }
 
 .full {
+  display: flex;
   height: 100%;
   width: 100%;
+  flex-flow: column nowrap;
+}
+.full > div {
+  padding: 10px;
 }
 .header{
   background-color: #CCC;
-  width: 100%;
   text-align: center;
   border-bottom: 1px solid #AAA; 
   padding: 10px 0px;
 }
 .middle {
   background-color: #DDD;
-  height: 100%;
   padding: 10px;
+  flex: 1;
+  display: flex;
+  flex-flow: row nowrap;
 }
 .footer {
   background-color: #CCC;

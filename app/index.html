@@ -30,7 +30,7 @@
 <div class="full">
   <div class="header">
     Google Spaceteam 
-    <span ng-if="Page.getLevel() != null">| Level {{ Page.getLevel() }}</span>
+    <span ng-if="levelNumber != null">| Level {{ levelNumber }}</span>
     <span ng-if="Page.getUid() != null">| {{ Page.getUid() }}</span>
     <span ng-if="Page.getUid() == null">| Not authenticated</span>
   </div> 
@@ -43,7 +43,9 @@
   <![endif]-->
 
   <div ng-view class="middle"></div>
-  <div class="footer">Random</div>
+  <div ng-if="showFooter" class="footer">
+    {{ tasks.completed }} / {{ tasks.failed + tasks.completed }} ... {{ levelState }}
+  </div>
 
 </div>
 </body>

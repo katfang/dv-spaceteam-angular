@@ -9,7 +9,7 @@ angular.module('join', ['ngRoute', 'firebase'])
   });
 }])
 
-.controller('JoinCtrl', ['$scope', '$firebase', '$location', 'gadgetsGenerator', 'host', function($scope, $firebase, $location, gadgetsGenerator, host) {
+.controller('JoinCtrl', ['$rootScope', '$scope', '$firebase', '$location', 'gadgetsGenerator', 'host', function($rootScope, $scope, $firebase, $location, gadgetsGenerator, host) {
   var ref = new Firebase("https://google-spaceteam.firebaseio.com");
   $scope.joinState = "no-auth"; // options are no-auth -> no-room -> waiting -> ready 
 
@@ -74,35 +74,8 @@ angular.module('join', ['ngRoute', 'firebase'])
     var levelRef = roomRef.child("level/1");
     host.initTasks(levelRef);
     host.checkLevelGenerated(levelRef);
-    // roomRef.child("level/1/tasks").set({completed:0, failed:0});
-
-    /*
-    // check users in room == users in level 
-    var numInRoom = null;
-    var numInLevel = null;
-    var roomUsersRef = roomRef.child("users");
-    var levelUsersRef = roomRef.child("level/1/users");
-    var roomCallback = function(snap) {
-      if (snap.val() !== null) {
-        numInRoom = snap.numChildren();
-        checkForStart();
-      }
-    }; 
-    var levelCallback = function(snap) {
-      if (snap.val() !== null) {
-        numInLevel = snap.numChildren();
-        checkForStart();
-      }
-    };
-    var checkForStart = function() {
-      if (numInRoom !== null && numInLevel !== null && numInRoom === numInLevel) {
-        roomUsersRef.off('value', roomCallback);
-        levelUsersRef.off('value', levelCallback);
-        roomRef.child("level/1/state").set('ready');
-      }
-    };
-    roomUsersRef.on('value', roomCallback);
-    levelUsersRef.on('value', levelCallback);
-    END HOST CODE */
+    // END HOST CODE
   };
+
+  $rootScope.showFooter = false;
 }]);

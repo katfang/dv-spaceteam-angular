@@ -9,7 +9,7 @@ angular.module('room', ['ngRoute', 'firebase'])
   });
 }])
 
-.controller('RoomCtrl', ['$scope', '$routeParams', '$firebase', '$location', 'gadgetsGenerator', 'host', 'Page', function($scope, $routeParams, $firebase, $location, gadgetsGenerator, host, Page) {
+.controller('RoomCtrl', ['$rootScope', '$scope', '$routeParams', '$firebase', '$location', 'gadgetsGenerator', 'host', function($rootScope, $scope, $routeParams, $firebase, $location, gadgetsGenerator, host) {
   var authRef = new Firebase("https://google-spaceteam.firebaseio.com");
   $scope.auth = authRef.getAuth();
   $scope.uid = $scope.auth.uid;
@@ -37,14 +37,15 @@ angular.module('room', ['ngRoute', 'firebase'])
   // DISPLAY Number of tasks completed / failed 
   $scope.tasks = null;
   $firebase(levelRef.child("tasks")).$asObject().$bindTo($scope, "tasks");
+  $firebase(levelRef.child("tasks")).$asObject().$bindTo($rootScope, "tasks");
   
   // DISPLAY levelState, also has logic for moving onto the next level
-  $scope.levelState = null;
+  $rootScope.levelState = null;
   var stateCallback = function(snap) {
-    $scope.levelState = snap.val();
+    $rootScope.levelState = snap.val();
     
     // move onto next level
-    if ($scope.levelState === 'win') { 
+    if ($rootScope.levelState === 'win') { 
       var newLevel = parseInt($routeParams.level) + 1;
       var newLevelRef = levelRef.parent().child(newLevel);
 
@@ -74,13 +75,14 @@ angular.module('room', ['ngRoute', 'firebase'])
       levelRef.child('state').off('value', stateCallback);
     }
     // HACK FOR TESTING
-    $scope.instruction = {text: "Drain frontends in ic"};
+    // scope.instruction = {text: "Drain frontends in ic"};
   };
   levelRef.child("state").on('value', stateCallback);
   
   // DISPLAY of old instructions
   $scope.pastInstructions = [];
   // HACK FOR TESTING 
+  /* 
   $scope.pastInstructions = [
     {completed: false, text: 'Setup WiFi'},
     {completed: false, text: 'Send eng-misc post about concert traffic'},
@@ -94,6 +96,7 @@ angular.module('room', ['ngRoute', 'firebase'])
     {completed: false, text: 'Send eng-misc post about director promotion'},
     {completed: false, text: 'Share a picture of your lunch'}
   ];
+  //*/ 
   
   // SERVER FUNC - generate instructions
   // start the level once we have gadgets
@@ -101,7 +104,7 @@ angular.module('room', ['ngRoute', 'firebase'])
   $firebase(levelRef.child("gadgets")).$asObject().$bindTo($scope, "gadgets");
   var gadgetsUnwatcher = $scope.$watch("gadgets", function(newValue, oldValue) {
     if (newValue !== undefined && oldValue === undefined && 
-       ($scope.levelState !== 'win' && $scope.levelState !== 'lose')) {
+       ($rootScope.levelState !== 'win' && $rootScope.levelState !== 'lose')) {
       setInstruction();
       gadgetsUnwatcher();
     }
@@ -123,13 +126,14 @@ angular.module('room', ['ngRoute', 'firebase'])
 
   // LISTEN for instruction 
   $scope.instruction = null;
-  $scope.instruction = {text: "Drain frontends in ic"};
+  // HACK for testing
+  // $scope.instruction = {text: "Drain frontends in ic"};
   var userStateCallback = function(snap) {
     if (snap.val() !== null) {
       var userState = snap.val();
       
       // we have instruction
-      if (userState !== false && userState !== true && $scope.levelState === 'ready') {
+      if (userState !== false && userState !== true && $rootScope.levelState === 'ready') {
         cleanup();
         $scope.instruction = snap.val();
 
@@ -147,6 +151,8 @@ angular.module('room', ['ngRoute', 'firebase'])
         }, 3000);
       }
     }
+    // HACK for testing
+    // $scope.instruction = {text: "Drain frontends in ic"};
   };
   userRef.on('value', userStateCallback);
 
@@ -213,6 +219,7 @@ angular.module('room', ['ngRoute', 'firebase'])
   
   // EXPOSE the needed data and functions 
   $scope.levelNumber = $routeParams.level;
-  Page.setLevel($scope.levelNumber);
   $scope.setGadgetState = setGadgetState;
+  $rootScope.levelNumber = $scope.levelNumber;
+  $rootScope.showFooter = true;
 }]);

@@ -1,23 +1,24 @@
-<p>Get to 10 completed tasks and you win! Fail 10 and you lose.</p>
 
-<p>Progress: {{ levelState }}</p>
-<p>Completed: {{ tasks.completed || 0 }}</p>
-<p>Failed: {{ tasks.failed || 0 }}</p>
-
-<button ng-if="readyToStart" ng-click="generateInstruction()">Start generating instructions</button>
-<p ng-if="instruction != null">{{ instruction.text }}</p>
-
-<div>
-<div ng-repeat="(gadgetKey, gadget) in ownedGadgets" class="gadget">
-  {{gadget.name}}<br /> 
-  <button ng-repeat="state in gadget.possible" ng-click="setGadgetState(gadgetKey, state)">{{state}}</button>
-</div>
+<div class="gadgets">
+  <div ng-repeat="(gadgetKey, gadget) in ownedGadgets" class="gadget">
+    {{gadget.name}}<br /> 
+    <button ng-repeat="state in gadget.possible" ng-click="setGadgetState(gadgetKey, state)">{{state}}</button>
+  </div>
 </div>
 
-<div class="past-instructions">
-<ul>
-<li ng-repeat="instr in pastInstructions | reverse" ng-class="{completed: instr.completed, failed: !instr.completed}">{{ instr.text }}</li>
-</ul>
-</div>
+<div class="instructions-console">
+<div class="console-inner">
+  <div ng-repeat="instr in pastInstructions" 
+       ng-class="{completed: instr.completed, failed: !instr.completed}">$ {{ instr.text }}</div>
 
-<div class="clear">
+  <div ng-if="instruction != null">$ {{ instruction.text }}</div>
+
+  <div ng-if="levelState == 'win'" class="completed">
+    [LEVEL SUCCESS] {{ tasks.completed }} task(s) completed during level.
+  </div>
+  <div ng-if="levelState == 'lose'" class="failed">
+    [LEVEL FAIL] {{ tasks.failed }} task(s) failed during level.
+  </div>
+
+</div>
+</div>

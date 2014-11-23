@@ -2,6 +2,8 @@
   <div ng-switch-when="no-auth">Waiting for server ...</div>
   
   <div ng-switch-when="no-room">
+    <p>Get to 10 completed tasks and progress to the next level! Fail 10 and you lose.</p>
+
     <p>Room name: <input ng-model="$parent.room"></p>
     <p><button ng-click="joinRoom()">Join room!</button></p>
   </div>
