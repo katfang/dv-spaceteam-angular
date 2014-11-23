@@ -8,6 +8,8 @@
   <title>Google Spaceteam</title>
   <link rel="stylesheet" href="bower_components/html5-boilerplate/css/normalize.css">
   <link rel="stylesheet" href="bower_components/html5-boilerplate/css/main.css">
+  <link rel="stylesheet" href="http://seiyria.github.io/bootstrap-slider/stylesheets/bootstrap.min.css">
+  <link rel="stylesheet" href="http://seiyria.github.io/bootstrap-slider/stylesheets/bootstrap-slider.css">
   <link rel="stylesheet" href="app.css">
   <link rel="stylesheet" href="room.css">
 
@@ -19,11 +21,16 @@
   <script src="bower_components/angular-route/angular-route.js"></script>
   <script src="bower_components/firebase/firebase.js"></script>
   <script src="bower_components/angularfire/dist/angularfire.js"></script>
+  <script src="bower_components/modernizr/modernizr.js"></script>
+  <script src="bower_components/jquery/dist/jquery.min.js"></script>
+  <!--script src="bower_components/jquery-ui/jquery-ui.min.js"></script-->
+  <script src="bower_components/seiyria-bootstrap-slider/dist/bootstrap-slider.min.js"></script>
   <script src="app.js"></script>
   <script src="js/page.js"></script>
   <script src="join/join.js"></script>
   <script src="room/room.js"></script>
   <script src="room/services.js"></script>
+  <script src="room/gadgets.js"></script>
   <script src="js/stringFormatterModule.js"></script>
 </head>
 <body>
@@ -34,10 +41,6 @@
     <span ng-if="Page.getUid() != null">| {{ Page.getUid() }}</span>
     <span ng-if="Page.getUid() == null">| Not authenticated</span>
   </div> 
-  <!--ul class="menu">
-    <li><a href="#/join">join</a></li>
-  </ul-->
-
   <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
   <![endif]-->

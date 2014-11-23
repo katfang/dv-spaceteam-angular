@@ -7,11 +7,11 @@
   flex-flow: row wrap;
 }
 
-.gadget {
+.gadgets > div {
   padding:20px;
 }
 
-.gadget > button {
+.button-gadget > button {
   display: block;
   width: 100%;
   margin:5px;

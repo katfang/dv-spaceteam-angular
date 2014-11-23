@@ -9,6 +9,7 @@ angular.module('googleSpaceteam', [
   'join',
   'room',
   'roomServices',
+  'gadgets',
 ]).
 
 config(['$routeProvider', function($routeProvider) {

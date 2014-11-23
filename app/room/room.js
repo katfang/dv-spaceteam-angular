@@ -66,6 +66,8 @@ angular.module('room', ['ngRoute', 'firebase'])
 
       // LISTEN for next level begin
       var beginCallback = function(snap) {
+        // REMOVE all listeners 
+        myGadgetsRef.off('child_changed', sliderGadgetsCallback); 
         if (snap.val() === "ready") {
           $location.path('room/' + $routeParams.roomKey + '/' + newLevel);
           newLevelRef.child("state").off('value', beginCallback);
@@ -183,6 +185,15 @@ angular.module('room', ['ngRoute', 'firebase'])
   // DISPLAY owned gadgets 
   var myGadgetsRef = levelRef.child("gadgets").orderByChild("user").equalTo($scope.uid);
   $firebase(myGadgetsRef).$asObject().$bindTo($scope, "ownedGadgets");
+  var sliderGadgetsCallback = function(snap) {
+    if (snap.val() !== null) {
+      var gadget = snap.val();
+      if (gadget.type === 'slider') {
+        $('#' + snap.key()).val(gadget.state);
+      }
+    }
+  };
+  myGadgetsRef.on('child_changed', sliderGadgetsCallback); 
   
   // SET state of gadget based on manipulation
   var setGadgetState = function(gadgetKey, state) {
@@ -205,6 +216,7 @@ angular.module('room', ['ngRoute', 'firebase'])
   });
   // Set if you won or lost
   var setFinalState = function(state) {
+    // Final cleanup
     cleanup();
     $scope.instruction = null;
     levelRef.child("state").transaction(function(currentData) {
