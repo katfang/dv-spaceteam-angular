@@ -1,0 +1,6 @@
+<div class="dropdown-gadget">
+  {{ gadget.name }}<br />
+  <select id="{{ key }}">
+    <option ng-repeat="state in gadget.possible" value="{{ state }}">{{ state }}</option>
+  </select>
+</div>

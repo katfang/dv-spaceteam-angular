@@ -13,12 +13,38 @@ angular.module('gadgets', [])
       room: '=roomMetadata',
     },
     link: function($scope, element, attrs) {
-      var ref = new Firebase("https://google-spaceteam.firebaseio.com/" + $scope.room.key + "/level/" + $scope.room.level + "/gadgets/" + $scope.key + "/state");
+      var ref = new Firebase("https://google-spaceteam.firebaseio.com/" + $scope.room.key)
+                  .child("/level/" + $scope.room.level + "/gadgets/" + $scope.key + "/state");
       $timeout(function() {
         $('#' + $scope.key).children("button").each(function(index) {
           $(this).on('click', function(event) { 
             ref.set($(this).text());
           });
+        });
+      });
+    }
+  };
+}])
+
+.directive('dropdownGadget', ['$timeout', function($timeout) {
+  return {
+    restrict: 'E',
+    templateUrl: 'room/dropdown-gadget.html',
+    scope: {
+      key: '=',
+      gadget: '=',
+      room: '=roomMetadata',
+    },
+    link: function($scope, element, attrs) {
+      var ref = new Firebase("https://google-spaceteam.firebaseio.com/" + $scope.room.key)
+                  .child("/level/" + $scope.room.level + "/gadgets/" + $scope.key + "/state");
+      $timeout(function() {
+        // select nothing if there's no state 
+        if ($scope.gadget.state === undefined) {
+          $('#' + $scope.key).prop('selectedIndex', -1);
+        }
+        $('#' + $scope.key).change(function() {
+          ref.set($(this).val());
         });
       });
     }

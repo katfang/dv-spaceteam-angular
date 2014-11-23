@@ -5,10 +5,13 @@
 .gadgets {
   display: flex;
   flex-flow: row wrap;
+  justify-content:space-around;
+  align-content: flex-stretch; 
 }
 
-.button-gadget {
-  padding:0px 20px;
+.gadgets > div {
+  min-width:25%; 
+  padding:0 15px;
 }
 
 .button-gadget > button {
@@ -23,6 +26,7 @@
 }
 
 .slider {
+  width:20px;
   -webkit-appearance: slider-vertical
 }
 

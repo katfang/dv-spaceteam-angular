@@ -1,10 +1,10 @@
 <div class="slider-gadget">
-{{ gadget.name }}<br />
+  {{ gadget.name }}<br />
 
-<input type="range" name="{{ key }}" id="{{ key }}" 
-  min="{{ gadget.min }}" max="{{ gadget.max }}" step="{{ gadget.step }}" 
-  value="{{ state || 0 }}" orient="vertical" class="slider"> 
-<br />
+  <input type="range" name="{{ key }}" id="{{ key }}" 
+    min="{{ gadget.min }}" max="{{ gadget.max }}" step="{{ gadget.step }}" 
+    value="{{ state || 0 }}" orient="vertical" class="slider"> 
+  <br />
  
-{{ state || 0 }} {{ gadget.units }}
+  {{ state || 0 }} {{ gadget.units }}
 </div>
