@@ -1,5 +1,41 @@
 /* app css stylesheet */
 
+.clear { clear:both; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  min-height: 100%;
+  padding: 0;
+}
+
+.full {
+  height: 100%;
+  width: 100%;
+}
+.header{
+  background-color: #CCC;
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid #AAA; 
+  padding: 10px 0px;
+}
+.middle {
+  background-color: #DDD;
+  height: 100%;
+  padding: 10px;
+}
+.footer {
+  background-color: #CCC;
+  bottom: 0px;
+}
+
+p {
+  margin-top: 0px; 
+}
+
+
+
 .menu {
   list-style: none;
   border-bottom: 0.1em solid black;
@@ -27,12 +63,4 @@
 .menu > li:nth-child(1):before {
   content: "";
   padding: 0;
-}
-
-.completed {
-  color:green;
-}
-
-.failed {
-  color:red;
 }

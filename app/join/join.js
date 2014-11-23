@@ -53,7 +53,7 @@ angular.module('join', ['ngRoute', 'firebase'])
     });
     // END SERVER FUNC
     
-    // listen for when the room begins
+    // LISTEN for when the room begins
     var beginCallback = function(snap) {
       if (snap.val() === "ready") {
         $location.path('room/' + $scope.room + "/1");

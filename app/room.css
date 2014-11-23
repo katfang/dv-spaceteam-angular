@@ -1,0 +1,26 @@
+.gadget {
+  padding:20px;
+  float: left; 
+}
+
+
+.gadget > button {
+  display: block;
+  width: 100%;
+  margin:5px;
+  text-align: left;
+}
+
+.past-instructions {
+  padding-left:20px;
+  float: left;
+}
+
+.completed {
+  color:green;
+}
+
+.failed {
+  color:red;
+}
+

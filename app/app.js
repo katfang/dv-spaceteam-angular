@@ -4,10 +4,11 @@
 angular.module('googleSpaceteam', [
   'ngRoute',
   'firebase',
+  'stringFormatterModule',
+  'page',
   'join',
   'room',
   'roomServices',
-  'stringFormatterModule'
 ]).
 
 config(['$routeProvider', function($routeProvider) {
@@ -22,9 +23,22 @@ config(['$routeProvider', function($routeProvider) {
 
 .factory('helper', function() {
   var selectRandomKey = function(dict) {
+    var removeKey = function(key, keys) {
+      var index = keys.indexOf(key);
+      if (index !== -1) {
+        keys.splice(index,1);
+      }
+    };
     var keys = Object.keys(dict);
-    var selectedKey = keys[Math.floor(Math.random() * keys.length)];
-    return selectedKey;
+    removeKey('$id', keys);
+    removeKey('$priority', keys);
+    removeKey('$value', keys);
+    if (keys.length === 0) {
+      return null;
+    } else {
+      var selectedKey = keys[Math.floor(Math.random() * keys.length)];
+      return selectedKey;
+    }
   };
 
   var savedUsername = null;

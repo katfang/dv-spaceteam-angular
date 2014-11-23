@@ -9,21 +9,18 @@ angular.module('roomServices', ['firebase'])
     var roomUsersRef = levelRef.parent().parent().child("users");
     var levelUsersRef = levelRef.child("users");
     var roomCallback = function(snap) {
-      console.log("room callback");
       if (snap.val() !== null) {
         numInRoom = snap.numChildren();
         checkForStart();
       }
     }; 
     var levelCallback = function(snap) {
-      console.log("level callback");
       if (snap.val() !== null) {
         numInLevel = snap.numChildren();
         checkForStart();
       }
     };
     var checkForStart = function() {
-      console.log("check for start");
       if (numInRoom !== null && numInLevel !== null && numInRoom === numInLevel) {
         roomUsersRef.off('value', roomCallback);
         levelUsersRef.off('value', levelCallback);
@@ -65,7 +62,7 @@ angular.module('roomServices', ['firebase'])
           while (Object.keys(gadgets).length < 5) {
             var gadgetKey = helper.selectRandomKey(allGadgets);
             gadgets[gadgetKey] = allGadgets[gadgetKey];
-            gadgets[gadgetKey].owner = uid;
+            gadgets[gadgetKey].user= uid;
           }
           deferred.resolve(gadgets);
         }
@@ -77,41 +74,20 @@ angular.module('roomServices', ['firebase'])
 
   var randomInstruction = function(gadgets) {
     var gadgetKey = helper.selectRandomKey(gadgets);
-    while (gadgetKey === '$id' || gadgetKey === '$priority') {
-      gadgetKey = helper.selectRandomKey(gadgets);
+    if (gadgetKey === null) {
+      return null;
+    } else {
+      var gadget = gadgets[gadgetKey];
+      var stateKey = helper.selectRandomKey(gadget.possible);
+      var state = gadget.possible[stateKey];
+      var text = gadget.display.format(state);
+      var gadgetCurrentState = (gadget.state !== undefined) ? gadget.state : null; 
+      return {gadgetKey : gadgetKey, text: text, gadgetCurrentState: gadgetCurrentState, state: state};
     }
-    var gadget = gadgets[gadgetKey];
-    var stateKey = helper.selectRandomKey(gadget.possible);
-    var state = gadget.possible[stateKey];
-    var text = gadget.display.format(state);
-    var gadgetCurrentState = (gadget.state !== undefined) ? gadget.state : null; 
-    return {gadgetKey : gadgetKey, text: text, gadgetCurrentState: gadgetCurrentState, state: state};
   };
   
   return {
     newGadgets: newGadgets,
     randomInstruction: randomInstruction
-  };
-}])
-
-.factory('levelGenerator', ['$firebase', '$q', 'helper', function($firebase, $q, helper) {
-  var ref = new Firebase("https://google-spaceteam.firebaseio.com/-gadgets");
-  return function(username) {
-    var deferred = $q.defer();
-    var callback = function(snap) {
-      if (snap.val() !== null) {
-        ref.off('value', callback);
-        var gadgets = snap.val();
-        var level = {tasks: {completed:0, failed:0}, gadgets:{}};
-        while (Object.keys(level.gadgets).length < 5) {
-          var gadgetKey = helper.selectRandomKey(gadgets);
-          level.gadgets[gadgetKey] = gadgets[gadgetKey];
-          level.gadgets[gadgetKey].owner = helper.getUsername();
-        }
-        deferred.resolve(level);
-      }
-    };
-    ref.on('value', callback);
-    return deferred.promise;
   };
 }]);

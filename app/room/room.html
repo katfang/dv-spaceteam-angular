@@ -1,4 +1,3 @@
-<p>Level {{ levelNumber }} | {{ uid }}</p>
 <p>Get to 10 completed tasks and you win! Fail 10 and you lose.</p>
 
 <p>Progress: {{ levelState }}</p>
@@ -8,14 +7,17 @@
 <button ng-if="readyToStart" ng-click="generateInstruction()">Start generating instructions</button>
 <p ng-if="instruction != null">{{ instruction.text }}</p>
 
-<ul>
-<li ng-repeat="(gadgetKey, gadget) in ownedGadgets">
+<div>
+<div ng-repeat="(gadgetKey, gadget) in ownedGadgets" class="gadget">
   {{gadget.name}}<br /> 
-  <button ng-repeat="state in gadget.possible" ng-click="setGadgetState(gadgetKey, state)">{{state}}
-  </button>
-</li>
-</ul>
+  <button ng-repeat="state in gadget.possible" ng-click="setGadgetState(gadgetKey, state)">{{state}}</button>
+</div>
+</div>
 
+<div class="past-instructions">
 <ul>
 <li ng-repeat="instr in pastInstructions | reverse" ng-class="{completed: instr.completed, failed: !instr.completed}">{{ instr.text }}</li>
 </ul>
+</div>
+
+<div class="clear">
