@@ -150,7 +150,7 @@ angular.module('room', ['ngRoute', 'firebase'])
         // set a timeout after which point the instruction failed
         timeout = setTimeout(function() {
           taskEnded(/* completed = */ false);
-        }, 3000);
+        }, 5000);
       }
     }
     // HACK for testing
