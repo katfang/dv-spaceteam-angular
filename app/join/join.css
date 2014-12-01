@@ -1,7 +1,14 @@
 .lose-console {
   font-family: monospace;
   font-size: 50px;
+  color: #F2F3F7; /* snow */
 }
 
-.lose-console > div {
+a, a:link, a:visited {
+  color: #F2F3F7; /* snow */
+  text-decoration: none;
+}
+
+a:hover {
+  color: #9298A0; /* ashen */
 }
