@@ -41,8 +41,10 @@ angular.module('room', ['ngRoute', 'firebase'])
   
   // DISPLAY levelState, also has logic for moving onto the next level
   $rootScope.levelState = null;
+  $scope.levelState = null;
   var stateCallback = function(snap) {
     $rootScope.levelState = snap.val();
+    $scope.levelState = snap.val();
     
     // move onto next level
     if ($rootScope.levelState === 'win') { 
@@ -182,6 +184,10 @@ angular.module('room', ['ngRoute', 'firebase'])
       return currentData;
     });
 
+    if ($scope.levelState !== 'ready') {
+      console.log("I should probably stop getting called now...");
+    }
+      
     setInstruction();
   }; 
   
