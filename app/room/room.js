@@ -9,7 +9,7 @@ angular.module('room', ['ngRoute', 'firebase'])
   });
 }])
 
-.controller('RoomCtrl', ['$rootScope', '$scope', '$routeParams', '$firebase', '$location', 'gadgetsGenerator', 'host', function($rootScope, $scope, $routeParams, $firebase, $location, gadgetsGenerator, host) {
+.controller('RoomCtrl', ['$rootScope', '$scope', '$routeParams', '$firebase', '$location', 'gadgetsGenerator', '$http', function($rootScope, $scope, $routeParams, $firebase, $location, gadgetsGenerator, $http) {
   var authRef = new Firebase("https://google-spaceteam.firebaseio.com");
   $scope.auth = authRef.getAuth();
   $scope.uid = $scope.auth.uid;
@@ -50,19 +50,15 @@ angular.module('room', ['ngRoute', 'firebase'])
       var newLevelRef = levelRef.parent().child(newLevel);
 
       // START SERVER FUNC
-      // generate gadgets for the next level
-      gadgetsGenerator.newGadgets().then(function(gadgets) {
-        newLevelRef.child("gadgets").update(gadgets);
-        var usersUpdateDict = {};
-        usersUpdateDict[$scope.uid] = false;
-        newLevelRef.child("users").update(usersUpdateDict);
+      // !!! SERVER
+      // $http.post("http://130.211.156.29:8080/roomgen", {key: $routeParams.roomKey, level:newLevel}).
+      $http.post("http://localhost:8080/roomgen", {key: $routeParams.roomKey, level:newLevel}).
+      success(function(data, status, headers, config) {
+        console.log("SUCCESSFUL roomgen");
+      }).
+      error(function(data, status, headers, config) {
+        console.log("ERROR on roomgen");
       });
-      // END SERVER FUNC
-
-      // START HOST CODE
-      host.initTasks(newLevelRef);
-      host.checkLevelGenerated(newLevelRef, levelRef.parent().parent());
-      // END HOST CODE
 
       // LISTEN for next level begin
       var beginCallback = function(snap) {

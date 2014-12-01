@@ -13,7 +13,7 @@ angular.module('join', ['ngRoute', 'firebase'])
   });
 }])
 
-.controller('JoinCtrl', ['$rootScope', '$scope', '$firebase', '$location', 'gadgetsGenerator', 'host', function($rootScope, $scope, $firebase, $location, gadgetsGenerator, host) {
+.controller('JoinCtrl', ['$rootScope', '$scope', '$firebase', '$location', '$http', function($rootScope, $scope, $firebase, $location, $http) {
   var ref = new Firebase("https://google-spaceteam.firebaseio.com");
   $scope.joinState = "no-auth"; // options are no-auth -> no-room -> waiting -> ready 
 
@@ -49,14 +49,6 @@ angular.module('join', ['ngRoute', 'firebase'])
     usersUpdateDict[$scope.uid] = false;
     usersRef.update(usersUpdateDict); //TODO: tx to check that the username isn't taken or do anon user thing
 
-    // generate gadgets and set user in the level
-    // START SERVER FUNC
-    gadgetsGenerator.newGadgets().then(function(gadgets) {
-      ref.child($scope.room).child("level/1/gadgets").update(gadgets);
-      ref.child($scope.room).child("level/1/users").update(usersUpdateDict);
-    });
-    // END SERVER FUNC
-    
     // LISTEN for when the room begins
     var beginCallback = function(snap) {
       if (snap.val() === "ready") {
@@ -69,40 +61,40 @@ angular.module('join', ['ngRoute', 'firebase'])
   };
   
   $scope.startRoom = function() {
-    var roomRef = ref.child($scope.room);
-    
-    // set room so server knows we're ready to start
-    roomRef.child("level/1/state").set('waiting');
-
-    // START HOST CODE 
-    var levelRef = roomRef.child("level/1");
-    host.initTasks(levelRef);
-    host.checkLevelGenerated(levelRef, roomRef);
-    // END HOST CODE
+    // !!! SERVER
+    // $http.post("http://130.211.156.29:8080/roomgen", {key: $scope.room, level:1}).
+    $http.post("http://localhost:8080/roomgen", {key: $scope.room, level:1}).
+    success(function(data, status, headers, config) {
+      console.log("SUCCESSFUL roomgen");
+    }).
+    error(function(data, status, headers, config) {
+      console.log("ERROR on roomgen");
+    });
   };
 
   $rootScope.showFooter = false;
 }])
 
-.controller('LoseCtrl', ['$rootScope', '$scope', '$routeParams', 'host', function($rootScope, $scope, $routeParams, host) {
+.controller('LoseCtrl', ['$rootScope', '$scope', '$routeParams', '$http', function($rootScope, $scope, $routeParams, $http) {
   $rootScope.showFooter = false;
 
   var roomRef = new Firebase("https://google-spaceteam.firebaseio.com").child($routeParams.roomKey);
   var levelRef = roomRef.child("lose-screen");
-  
-  // START HOST CODE
-  // this is actually a check to make sure everyone got to the lose screen 
-  host.checkLevelGenerated(levelRef, roomRef); 
-  var readyCallback = function(snap) {
-    if (snap.val() === "ready") {
-      roomRef.set(null);
-      levelRef.child("state").off('value', readyCallback);
-    }
-  };
-  levelRef.child("state").on("value", readyCallback);
-  // END HOST CODE
-
   var usersUpdateDict = {};
   usersUpdateDict[roomRef.getAuth().uid] = false;
   levelRef.child("users").update(usersUpdateDict);
+
+  var callServer = function() { 
+    // !!! SERVER
+    // $http.post("http://130.211.156.29:8080/lose-screen", {key: $routeParams.roomKey}).
+    $http.post("http://localhost:8080/lose-screen", {key: $routeParams.roomKey}).
+    success(function(data, status, headers, config) {
+      console.log("SUCCESSFUL lose-screen");
+    }).
+    error(function(data, status, headers, config) {
+      console.log("ERROR on lose-screen");
+    });
+  };
+  callServer();
+
 }]);
