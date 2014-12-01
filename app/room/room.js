@@ -51,8 +51,8 @@ angular.module('room', ['ngRoute', 'firebase'])
 
       // START SERVER FUNC
       // !!! SERVER
-      // $http.post("http://130.211.156.29:8080/roomgen", {key: $routeParams.roomKey, level:newLevel}).
-      $http.post("http://localhost:8080/roomgen", {key: $routeParams.roomKey, level:newLevel}).
+      $http.post("http://130.211.156.29:8080/roomgen", {key: $routeParams.roomKey, level:newLevel}).
+      // $http.post("http://localhost:8080/roomgen", {key: $routeParams.roomKey, level:newLevel}).
       success(function(data, status, headers, config) {
         console.log("SUCCESSFUL roomgen");
       }).
