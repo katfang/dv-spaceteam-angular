@@ -78,11 +78,13 @@ angular.module('join', ['ngRoute', 'firebase'])
 .controller('LoseCtrl', ['$rootScope', '$scope', '$routeParams', '$http', function($rootScope, $scope, $routeParams, $http) {
   $rootScope.showFooter = false;
 
-  var roomRef = new Firebase("https://google-spaceteam.firebaseio.com").child($routeParams.roomKey);
-  var levelRef = roomRef.child("lose-screen");
-  var usersUpdateDict = {};
-  usersUpdateDict[roomRef.getAuth().uid] = false;
-  levelRef.child("users").update(usersUpdateDict);
+  var setLost = function() {
+    var roomRef = new Firebase("https://google-spaceteam.firebaseio.com").child($routeParams.roomKey);
+    var levelRef = roomRef.child("lose-screen");
+    var usersUpdateDict = {};
+    usersUpdateDict[roomRef.getAuth().uid] = false;
+    levelRef.child("users").update(usersUpdateDict);
+  };
 
   var callServer = function() { 
     // !!! SERVER
@@ -90,6 +92,7 @@ angular.module('join', ['ngRoute', 'firebase'])
     // $http.post("http://localhost:8080/lose-screen", {key: $routeParams.roomKey}).
     success(function(data, status, headers, config) {
       console.log("SUCCESSFUL lose-screen");
+      setLost();
     }).
     error(function(data, status, headers, config) {
       console.log("ERROR on lose-screen");
