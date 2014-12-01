@@ -8,7 +8,6 @@ app/index-async.html
 *.swo
 app/view1
 app/view2
-bower_components
 e2e-tests
 gadgets-backup.json
 karma.conf.js
