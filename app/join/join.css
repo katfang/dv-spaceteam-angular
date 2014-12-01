@@ -1,0 +1,7 @@
+.lose-console {
+  font-family: monospace;
+  font-size: 50px;
+}
+
+.lose-console > div {
+}

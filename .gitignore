@@ -5,6 +5,7 @@ app/components/*
 app/index-async.html
 *.log
 *.swp
+*.swo
 app/view1
 app/view2
 bower_components

@@ -19,4 +19,11 @@ angular.module('page', [])
 
 .controller('PageCtrl', ['$scope', 'Page', function($scope, Page) {
   $scope.Page = Page;
+  $scope.getTimes=function(n){ 
+    var arr = [];
+    for (var i = 0; i < n; i++) {
+      arr.push(i);
+    }
+    return arr; 
+  };
 }]);

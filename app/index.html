@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="bower_components/html5-boilerplate/css/main.css">
   <link rel="stylesheet" href="app.css">
   <link rel="stylesheet" href="room.css">
+  <link rel="stylesheet" href="join/join.css">
 
   <script src="bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
   <!-- In production use:
@@ -43,7 +44,16 @@
 
   <div ng-view class="middle"></div>
   <div ng-if="showFooter" class="footer">
-    {{ tasks.completed }} / {{ tasks.failed + tasks.completed }} ... {{ levelState }}
+    <div class="progress-container">
+      <div ng-repeat="t in getTimes(tasks.completed)" class="progress-block completed-block"></div>
+    </div>
+    <div class="clear"></div>
+
+    <div class="progress-container">
+      <div ng-repeat="t in getTimes(tasks.failed)" class="progress-block failed-block"></div>
+    </div>
+    <div class="clear"></div>
+    <!-- {{ tasks.completed }} / {{ tasks.failed + tasks.completed }} ... {{ levelState }} -->
   </div>
 
 </div>

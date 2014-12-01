@@ -7,6 +7,10 @@ angular.module('join', ['ngRoute', 'firebase'])
     templateUrl: 'join/join.html',
     controller: 'JoinCtrl'
   });
+  $routeProvider.when('/lose/:roomKey', {
+    templateUrl: 'join/lose.html',
+    controller: 'LoseCtrl'
+  });
 }])
 
 .controller('JoinCtrl', ['$rootScope', '$scope', '$firebase', '$location', 'gadgetsGenerator', 'host', function($rootScope, $scope, $firebase, $location, gadgetsGenerator, host) {
@@ -73,9 +77,32 @@ angular.module('join', ['ngRoute', 'firebase'])
     // START HOST CODE 
     var levelRef = roomRef.child("level/1");
     host.initTasks(levelRef);
-    host.checkLevelGenerated(levelRef);
+    host.checkLevelGenerated(levelRef, roomRef);
     // END HOST CODE
   };
 
   $rootScope.showFooter = false;
+}])
+
+.controller('LoseCtrl', ['$rootScope', '$scope', '$routeParams', 'host', function($rootScope, $scope, $routeParams, host) {
+  $rootScope.showFooter = false;
+
+  var roomRef = new Firebase("https://google-spaceteam.firebaseio.com").child($routeParams.roomKey);
+  var levelRef = roomRef.child("lose-screen");
+  
+  // START HOST CODE
+  // this is actually a check to make sure everyone got to the lose screen 
+  host.checkLevelGenerated(levelRef, roomRef); 
+  var readyCallback = function(snap) {
+    if (snap.val() === "ready") {
+      roomRef.set(null);
+      levelRef.child("state").off('value', readyCallback);
+    }
+  };
+  levelRef.child("state").on("value", readyCallback);
+  // END HOST CODE
+
+  var usersUpdateDict = {};
+  usersUpdateDict[roomRef.getAuth().uid] = false;
+  levelRef.child("users").update(usersUpdateDict);
 }]);

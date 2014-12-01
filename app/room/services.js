@@ -3,17 +3,17 @@
 angular.module('roomServices', ['firebase'])
 
 .factory('host', ['$firebase', function($firebase) {
-  var checkLevelGenerated = function(levelRef) {
+  var checkLevelGenerated = function(levelRef, roomRef) {
     var numInRoom = null;
     var numInLevel = null;
-    var roomUsersRef = levelRef.parent().parent().child("users");
+    var roomUsersRef = roomRef.child("users");
     var levelUsersRef = levelRef.child("users");
     var roomCallback = function(snap) {
       if (snap.val() !== null) {
         numInRoom = snap.numChildren();
         checkForStart();
       }
-    }; 
+    };
     var levelCallback = function(snap) {
       if (snap.val() !== null) {
         numInLevel = snap.numChildren();

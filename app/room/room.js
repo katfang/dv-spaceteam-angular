@@ -61,7 +61,7 @@ angular.module('room', ['ngRoute', 'firebase'])
 
       // START HOST CODE
       host.initTasks(newLevelRef);
-      host.checkLevelGenerated(newLevelRef);
+      host.checkLevelGenerated(newLevelRef, levelRef.parent().parent());
       // END HOST CODE
 
       // LISTEN for next level begin
@@ -75,7 +75,14 @@ angular.module('room', ['ngRoute', 'firebase'])
       };
       newLevelRef.child('state').on('value', beginCallback);
       levelRef.child('state').off('value', stateCallback);
+    } 
+    
+    else if ($rootScope.levelState === 'lose') {
+      myGadgetsRef.off('child_changed', sliderGadgetsCallback); 
+      levelRef.child('state').off('value', stateCallback);
+      $location.path('lose/' + $routeParams.roomKey);
     }
+
     // HACK FOR TESTING
     // scope.instruction = {text: "Drain frontends in ic"};
   };
@@ -171,7 +178,7 @@ angular.module('room', ['ngRoute', 'firebase'])
       }
 
       if (completed) {
-        currentData.completed += 1; 
+        currentData.completed += 1;
       } else {
         currentData.failed += 1;
       }
@@ -221,12 +228,12 @@ angular.module('room', ['ngRoute', 'firebase'])
     $scope.instruction = null;
     levelRef.child("state").transaction(function(currentData) {
       if (currentData === "ready") {
-        return state; 
+        return state;
       } else {
         return undefined;
       }
     });
-  }; 
+  };
   // END HOST CODE
   
   // EXPOSE the needed data and functions 
