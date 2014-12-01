@@ -62,7 +62,7 @@ angular.module('join', ['ngRoute', 'firebase'])
   
   $scope.startRoom = function() {
     // !!! SERVER
-    $http.post("http://130.211.156.29:8080/roomgen", {key: $scope.room, level:1}).
+    $http.post("/roomgen", {key: $scope.room, level:1}).
     // $http.post("http://localhost:8080/roomgen", {key: $scope.room, level:1}).
     success(function(data, status, headers, config) {
       console.log("SUCCESSFUL roomgen");
@@ -88,7 +88,7 @@ angular.module('join', ['ngRoute', 'firebase'])
 
   var callServer = function() { 
     // !!! SERVER
-    $http.post("http://130.211.156.29:8080/lose-screen", {key: $routeParams.roomKey}).
+    $http.post("/lose-screen", {key: $routeParams.roomKey}).
     // $http.post("http://localhost:8080/lose-screen", {key: $routeParams.roomKey}).
     success(function(data, status, headers, config) {
       console.log("SUCCESSFUL lose-screen");
